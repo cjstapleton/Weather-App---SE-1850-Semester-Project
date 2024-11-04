@@ -1,0 +1,45 @@
+{
+    "coord": {
+      "lon": -93.6319,
+      "lat": 42.0308
+    },
+    "weather": [
+      {
+        "id": 800,
+        "main": "Clear",
+        "description": "clear sky",
+        "icon": "01n"
+      }
+    ],
+    "base": "stations",
+    "main": {
+      "temp": 69.49,
+      "feels_like": 69.39,
+      "temp_min": 68.09,
+      "temp_max": 70.23,
+      "pressure": 1004,
+      "humidity": 69,
+      "sea_level": 1004,
+      "grnd_level": 969
+    },
+    "visibility": 10000,
+    "wind": {
+      "speed": 8.05,
+      "deg": 130
+    },
+    "clouds": {
+      "all": 0
+    },
+    "dt": 1730160765,
+    "sys": {
+      "type": 2,
+      "id": 2041488,
+      "country": "US",
+      "sunrise": 1730119372,
+      "sunset": 1730157208
+    },
+    "timezone": -18000,
+    "id": 4846834,
+    "name": "Ames",
+    "cod": 200,
+}
