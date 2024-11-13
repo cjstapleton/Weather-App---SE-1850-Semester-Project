@@ -8,6 +8,7 @@
 
 /* PROTOTYPES */
 int weatherData(char *apiURL);
+int parseWeatherData();
 size_t write_data(void *ptr, size_t size, size_t nmemb, FILE *stream);
 
 int main (void) {
@@ -56,6 +57,8 @@ int main (void) {
     weatherData(apiURL);
 
     // 11/3 PARSE JSON FILE CONTENTS
+    
+    parseWeatherData();
 }
 
 // callback function to handle data from API
@@ -89,10 +92,42 @@ int weatherData(char *apiURL) {
 
     if (result != CURLE_OK) {
         fprintf(stderr, "Error: %s\n", curl_easy_strerror(result));
+        fclose(fp);
         return -1;
     }
 
+    fclose(fp);
     curl_easy_cleanup(curl);
+
+    return 0;
+}
+
+int parseWeatherData() {
+    printf("Test");
+    FILE *fp;
+    char buffer[1024];
+
+    struct json_object *parsed_json;
+    struct json_object *main_obj;
+    struct json_object *temp;
+
+    fp = fopen("current-weather.json", "r");
+    fread(buffer, 1024, 1, fp);
+    fclose(fp);
+
+    printf("JSON file content:\n%s\n", buffer);
+
+    parsed_json = json_tokener_parse(buffer);
+
+    // First, get the "main" object
+    json_object_object_get_ex(parsed_json, "main", &main_obj);
+    // Then, get the "temp" field inside the "main" object
+    json_object_object_get_ex(main_obj, "temp", &temp);
+
+    printf("Temperature: %.2f\n", json_object_get_double(temp));
+
+    // Free the parsed JSON object
+    json_object_put(parsed_json);
 
     return 0;
 }
