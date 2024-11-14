@@ -7,16 +7,33 @@
 
 // api url for ames iowa in imperial units: https://api.openweathermap.org/data/2.5/weather?zip=50012&appid=020c9db2f8a57004fe2e82f6e1bbd905&units=imperial
 
+/*
+TO DO
+[x] NEED TO ADD RAIN AND SNOW VARIABLES
+[x] file system
+[ ] dynamic array resizing for string variables
+[x] conversion of wind degrees to cardinal directions
+[ ] branch conditionals
+    [ ] extreme weather conditions
+    [ ] what to wear
+    [ ] sun tanning/UV
+    [ ] activities
+[ ] update what conditions you would like to see
+[ ] how to use guide 
+[ ] maybe a bound limit for zipcode to prevent segmentation fault on invalid zipcode?
+*/
+
 /* PROTOTYPES */
 int weatherData(char *apiURL);
 int parseWeatherData();
 size_t write_data(void *ptr, size_t size, size_t nmemb, FILE *stream);
+const char *windDegreesConversion(int windDirectionInDegrees);
 
 /* GLOBAL VARIABLES */
 
 // under 'weather' object
 char mainOverview[20];
-char weatherDescription[10];
+char weatherDescription[30];
 
 // under 'main' object
 double tempValue;
@@ -28,6 +45,12 @@ int humidityValue;
 // under 'wind' object
 double windSpeed;
 int windDirectionInDegrees;
+
+// under 'rain' object
+double rainPerHour = -1;
+
+// under 'snow' object
+double snowPerHour = -1;
 
 // under 'clouds' object
 int cloudCoveragePercentage;
@@ -80,31 +103,42 @@ int main (void) {
 
     // *FROM THIS POINT, apiURL IS USABLE
 
+    // Makes the API call and creates current-weather.json
     weatherData(apiURL);
-
-    // 11/3 PARSE JSON FILE CONTENTS
     
+    // Parses current-weather.json and updates global variables 
     parseWeatherData();
 
-    
+    // FROM THIS POINT FORWARD, ALL GLOBAL VARIABLES HAVE USABLE VALUES
+
     printf("Main: %s\n", mainOverview);
     printf("Description: %s\n", weatherDescription);
 
-    printf("Temp: %.2lf\n", tempValue);
-    printf("Feels like: %.2lf\n", feelsLikeValue);
-    printf("Min temp: %.2lf\n", tempMin);
-    printf("Max temp: %.2lf\n", tempMax);
+    printf("Temp: %.2lf°F\n", tempValue);
+    printf("Feels like: %.2lf°F\n", feelsLikeValue);
+    printf("Min temp: %.2lf°F\n", tempMin);
+    printf("Max temp: %.2lf°F\n", tempMax);
     printf("Humidity: %d\n", humidityValue);
 
-    printf("Wind speed: %.2lf\n", windSpeed);
-    printf("Wind Direction: %d\n", windDirectionInDegrees);
+    printf("Wind speed: %.2lf miles per hour\n", windSpeed);
+    // TEST LINE
+    // printf("Wind Direction: %d\n", windDirectionInDegrees);
+    printf("Wind Direction: %s\n", windDegreesConversion(windDirectionInDegrees));
+
+    if (rainPerHour != -1) {
+        printf("Rain (millimeters per hour): %.2lf percent\n", rainPerHour);
+    }
+
+    if (snowPerHour != -1) {
+        printf("Snow (millimeters per hour): %.2lf\n", snowPerHour);
+    }
 
     printf("Cloud Coverage: %d\n", cloudCoveragePercentage);
 
     printf("Location: %s\n", location);
     
 
-   // FROM THIS POINT FORWARD, ALL GLOBAL VARIABLES HAVE USABLE VALUES
+
 }
 
 // callback function to handle data from API
@@ -170,6 +204,12 @@ int parseWeatherData() {
     struct json_object *speed;
     struct json_object *deg;
 
+    struct json_object *rain_obj;
+    struct json_object *rain;
+
+    struct json_object *snow_obj;
+    struct json_object *snow;
+
     struct json_object *clouds_obj;
     struct json_object *all;
 
@@ -206,6 +246,21 @@ int parseWeatherData() {
     json_object_object_get_ex(wind_obj, "speed", &speed);
     json_object_object_get_ex(wind_obj, "deg", &deg);
 
+    // Retrieve 'rain' object IF it exists
+    json_object_object_get_ex(parsed_json, "rain", &rain_obj);
+    if (rain_obj != NULL) {
+        json_object_object_get_ex(rain_obj, "1h", &rain);
+        rainPerHour = json_object_get_double(rain);
+    }
+
+    // Retrieve 'snow' object IF it exists
+    json_object_object_get_ex(parsed_json, "snow", &snow_obj);
+    if (snow_obj != NULL) {
+        json_object_object_get_ex(snow_obj, "1h", &snow);
+        snowPerHour = json_object_get_double(snow);
+    }
+
+
     // Retrieve 'clouds' object
     json_object_object_get_ex(parsed_json, "clouds", &clouds_obj);
     // Retrieve 'all' from 'clouds' object
@@ -239,4 +294,24 @@ int parseWeatherData() {
     json_object_put(parsed_json);
 
     return 0;
+}
+
+const char *windDegreesConversion(int windDegrees) {
+    if (windDegrees > 337 || windDegrees < 22.5) {
+        return "N";
+    } else if (windDegrees < 67) {
+        return "NE";
+    } else if (windDegrees < 112) {
+        return "E";
+    } else if (windDegrees < 157) {
+        return "SE";
+    } else if (windDegrees < 202) {
+        return "S";
+    } else if (windDegrees < 247) {
+        return "SW";
+    } else if (windDegrees < 292) {
+        return "W";
+    } else if (windDegrees < 337) {
+        return "NW";
+    }
 }
