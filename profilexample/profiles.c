@@ -12,14 +12,14 @@ int main() {
 	int zip2 = 52349;
 	int zip3 = 50012;
 	
-	int choices1 = 10101110;
-	int choices2 = 11010101;
-	int choices3 = 11110101;
+	char choices1[] = "nnnn";
+	char choices2[] = "nnnn";
+	char choices3[] = "nnnn";
 	
 	struct Profile {
     char username[50];
     int zipCode;
-    int otherInteger;
+    char choice;
 	};
 	
 	
@@ -29,9 +29,9 @@ int main() {
 	fptr = fopen("example.txt", "w");
 
 	// Write some text to the file
-	fprintf(fptr, "%s %d %d\n", name1, zip1, choices1);
-	fprintf(fptr, "%s %d %d\n", name2, zip2, choices2);
-	fprintf(fptr, "%s %d %d\n", name3, zip3, choices3);
+	fprintf(fptr, "%s %d %s\n", name1, zip1, choices1);
+	fprintf(fptr, "%s %d %s\n", name2, zip2, choices2);
+	fprintf(fptr, "%s %d %s\n", name3, zip3, choices3);
 
 	// Close the file
 	fclose(fptr);
@@ -55,9 +55,9 @@ int main() {
     }
 
     // Read the profiles until the end of the file or the array limit is reached
-    while (fscanf(file, "%s %d %d", profiles[profileCount].username, 
+    while (fscanf(file, "%s %d %s", profiles[profileCount].username, 
                    &profiles[profileCount].zipCode, 
-                   &profiles[profileCount].otherInteger) == 3) {
+                   &profiles[profileCount].choice) == 3) {
         profileCount++;
 
         // If we exceed the array limit, stop reading further
@@ -76,7 +76,7 @@ int main() {
         printf("Profile #%d\n", i + 1);
         printf("  Username: %s\n", profiles[i].username);
         printf("  Zip Code: %d\n", profiles[i].zipCode);
-        printf("  Other Integer: %d\n\n", profiles[i].otherInteger);
+        printf("  Other Integer: %s\n\n", profiles[i].choice);
     }
 
     return 0;
