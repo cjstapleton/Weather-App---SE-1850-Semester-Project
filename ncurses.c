@@ -49,16 +49,20 @@ void rainy() {
 
 void snowy() {
 	start_color();
-	mvprintw(1, 3, "        .~~.");
-	mvprintw(2, 3, " .--.__(    )._");
-	mvprintw(3, 3, "(______________')");
+	mvprintw(4, 3, "        .~~.");
+	mvprintw(5, 3, " .--.__(    )._");
+	mvprintw(6, 3, "(______________')");
 	init_pair(PLAYER_PAIR, COLOR_CYAN, COLOR_BLACK);
 	attron(COLOR_PAIR(PLAYER_PAIR));
-	mvprintw(4, 3, "  +*#*#+*##*+*#");
+	mvprintw(7, 3, "  +*#*#+*##*+*#");
 	attroff(COLOR_PAIR(PLAYER_PAIR));
-	mvprintw(2, 22, "High : %d", x);
-	mvprintw(3, 22, "Low : %d", y);
-	mvprintw(6, 5, "Current : %d", x/2);
+	mvprintw(4, 22, "High : %d", x);
+	mvprintw(5, 22, "Low : %d", y);
+	mvprintw(6, 22, "Feels Like : %d", y);
+	mvprintw(7, 22, "Current : %d", x/2);
+	mvprintw(2, 3, "Location");
+	mvprintw(2, 12, "Description");
+	mvprintw(8, 22, "Precipitation : %d", y);
 }
 
 void er() { 
@@ -87,7 +91,7 @@ int main(int argc, char ** argv)
 	snowy();
     // refreshes the screen
     refresh();
-	er();
+	//er();
 	refresh();
     // pause the screen output
     getch();
