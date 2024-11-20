@@ -14,7 +14,7 @@ TO DO
 [x] dynamic array sizing for string variables
 [x] conversion of wind degrees to cardinal directions
 [ ] branch conditionals
-    [ ] extreme weather conditions
+    [x] extreme weather conditions
     [ ] what to wear
     [ ] sun tanning/UV
     [ ] activities
@@ -32,6 +32,7 @@ int parseWeatherData();
 size_t write_data(void *ptr, size_t size, size_t nmemb, FILE *stream);
 const char *windDegreesConversion(int windDirectionInDegrees);
 int createApiURL();
+int evaluateCurrentWeather();
 
 /* GLOBAL VARIABLES */
 
@@ -84,11 +85,13 @@ int main (void) {
     // if the zip code is invalid, parseWeatherData() will return -1.
     parseWeatherData();
     
+    // if the returned data indicates an invalid zip code
     while (parseWeatherData() == -1) {
         printf("The zip code you entered does not exist or is otherwise invalid.\n");
         printf("Please enter another zip code.\n");
         printf("\n");
 
+        // go through user input, data retrieval, and parsing again
         createApiURL(apiURLPtr);
         weatherData(apiURL);
         parseWeatherData();
@@ -129,11 +132,13 @@ int main (void) {
 
     printf("\n");
     printf("Cloud Coverage: %d%%\n", cloudCoveragePercentage);
+    
+    evaluateCurrentWeather();
 
     free(mainOverview);
     free(weatherDescription);
     free(location);
-
+    
 }
 
 // use curl to make an HTTP request and
@@ -233,7 +238,7 @@ int parseWeatherData() {
     json_object_object_get_ex(weather_obj, "main", &main);
     json_object_object_get_ex(weather_obj, "description", &description);
 
-    // First, get the "main" object
+    // First, get the 'main' object
     json_object_object_get_ex(parsed_json, "main", &main_obj);
     // Then, get the fields inside the "main" object
     json_object_object_get_ex(main_obj, "temp", &temp);
@@ -365,5 +370,43 @@ const char *windDegreesConversion(int windDegrees) {
         return "W";
     } else if (windDegrees < 337) {
         return "NW";
+    }
+}
+                        
+int evaluateCurrentWeather() {
+    int weatherIdentifier;
+
+    // compare to current weather main description to print ASCII art
+    if (strcmp(mainOverview, "Clear") == 0) {
+        weatherIdentifier = 1;
+        // Add ncurses code to print ASCII art
+    } else if (strcmp(mainOverview, "Clouds") == 0) {
+        weatherIdentifier = 2;
+    } else if (strcmp(mainOverview, "Rain") == 0 || 
+               strcmp(mainOverview, "Drizzle") == 0 ||
+               strcmp(mainOverview, "Thunderstorm") == 0) {
+                
+        weatherIdentifier = 3;
+        // Add ncurses code to print ASCII art
+    } else if (strcmp(mainOverview, "Snow") == 0) {
+        weatherIdentifier = 4;
+        // Add ncurses code to print ASCII art
+    } else if (strcmp(mainOverview, "Tornado") == 0) {
+        weatherIdentifier = 5;
+        printf("There is a tornado warning/tornado watch in the area.");
+        printf("Please seek shelter accordingly.");
+    } else {
+        weatherIdentifier = 0;
+    }
+
+    // extreme weather warnings
+    if (windSpeed >= 58) {
+        printf("Severe Thunderstorm Warning: Thunderstorms are likely occuring or imminent in the area.");
+    } else if (windSpeed >= 30) {
+        printf("Wind Advisory: High wind speeds in the area.");
+    }
+
+    if (tempValue >= 100 || (feelsLikeValue >= 90 && humidityValue >= 75)) {
+        printf("Heat advisory: High temperature or high feeling temperature in the area.");
     }
 }
