@@ -5,7 +5,13 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define PLAYER_PAIR 5
+
 // api url for ames iowa in imperial units: https://api.openweathermap.org/data/2.5/weather?zip=50012&appid=020c9db2f8a57004fe2e82f6e1bbd905&units=imperial
+
+// gcc weatherapp.c -o weatherapp -lcurl -ljson-c -lncurses -DNCURSES_STATIC
+
+// DEMO TO JUSTIN CAUSE WE EDITED PROPOSAL
 
 /*
 TO DO
@@ -33,6 +39,7 @@ size_t write_data(void *ptr, size_t size, size_t nmemb, FILE *stream);
 const char *windDegreesConversion(int windDirectionInDegrees);
 int createApiURL();
 int evaluateCurrentWeather();
+void drawWeatherGraphic();
 
 /* GLOBAL VARIABLES */
 
@@ -63,6 +70,8 @@ int cloudCoveragePercentage;
 // lone object
 char *location = NULL;
 
+// weather identifier for printing graphics
+int weatherIdentifier;
 
 int main (void) {
     printf("Enter the zip code you would like to see the weather at.\n");
@@ -98,6 +107,7 @@ int main (void) {
     }
     
     // FROM THIS POINT FORWARD, ALL GLOBAL VARIABLES HAVE USABLE VALUES
+    /*
     printf("\n");
     printf("Location: %s\n", location);
     
@@ -132,12 +142,43 @@ int main (void) {
 
     printf("\n");
     printf("Cloud Coverage: %d%%\n", cloudCoveragePercentage);
-    
+    */
     evaluateCurrentWeather();
+    
+     // init screen and sets up screen
+    initscr();
+    // print to screen
 
+	if (has_colors() == FALSE) {
+        printw("Your terminal does not support color\n");
+    }
+
+    drawWeatherGraphic();
+	mvprintw(5, 22, "Current: %.2lf°F", tempValue);
+    mvprintw(6, 22, "High: %.2lf°F", tempMax);
+	mvprintw(7, 22, "Low: %.2lf°F", tempMin);
+	mvprintw(8, 22, "Feels Like: %.2lf°F", feelsLikeValue);
+	mvprintw(2, 3, "Location: %s", location);
+	mvprintw(3, 3, "Description: %s", weatherDescription);
+
+	if (rainPerHour != -1) {
+        mvprintw(10, 22, "Rain: %.2lf mm/h", rainPerHour);
+    }
+
+    if (snowPerHour != -1) {
+        mvprintw(10, 22, "Snow: %.2lf mm/h", snowPerHour);
+    }
+
+    // refreshes the screen
+    refresh();
+    // pause the screen output
+    getch();
     free(mainOverview);
     free(weatherDescription);
     free(location);
+    // deallocates memory and ends ncurses
+    // endwin();
+    return 0;
     
 }
 
@@ -228,7 +269,6 @@ int parseWeatherData() {
     if (message != NULL) {
         return -1;
     }
-
 
     // Retrieve 'weather' object
     json_object_object_get_ex(parsed_json, "weather", &weather_array);
@@ -374,12 +414,9 @@ const char *windDegreesConversion(int windDegrees) {
 }
                         
 int evaluateCurrentWeather() {
-    int weatherIdentifier;
-
     // compare to current weather main description to print ASCII art
     if (strcmp(mainOverview, "Clear") == 0) {
         weatherIdentifier = 1;
-        // Add ncurses code to print ASCII art
     } else if (strcmp(mainOverview, "Clouds") == 0) {
         weatherIdentifier = 2;
     } else if (strcmp(mainOverview, "Rain") == 0 || 
@@ -387,10 +424,8 @@ int evaluateCurrentWeather() {
                strcmp(mainOverview, "Thunderstorm") == 0) {
                 
         weatherIdentifier = 3;
-        // Add ncurses code to print ASCII art
     } else if (strcmp(mainOverview, "Snow") == 0) {
         weatherIdentifier = 4;
-        // Add ncurses code to print ASCII art
     } else if (strcmp(mainOverview, "Tornado") == 0) {
         weatherIdentifier = 5;
         printf("There is a tornado warning/tornado watch in the area.");
@@ -408,5 +443,62 @@ int evaluateCurrentWeather() {
 
     if (tempValue >= 100 || (feelsLikeValue >= 90 && humidityValue >= 75)) {
         printf("Heat advisory: High temperature or high feeling temperature in the area.");
+    }
+}
+
+void drawWeatherGraphic() {
+    switch (weatherIdentifier) {
+        case 0:
+            start_color();
+            //init_pair(PLAYER_PAIR, COLOR_RED, COLOR_MAGENTA);
+            //attron(COLOR_PAIR(PLAYER_PAIR));
+            mvprintw(5, 3, "        .~~.");
+            mvprintw(6, 3, "      _(    )");
+            mvprintw(7, 3, " .-._(       '.");
+            mvprintw(8, 3, "(______________)");
+
+            break; 
+        case 1:
+            start_color();
+            init_pair(PLAYER_PAIR, COLOR_YELLOW, COLOR_BLACK);
+            attron(COLOR_PAIR(PLAYER_PAIR));
+            mvprintw(5, 3, "'.|.'");
+            mvprintw(6, 3, "~~O~~");
+            mvprintw(7, 3, ".'|'.");
+            attroff(COLOR_PAIR(PLAYER_PAIR));;
+
+            break;
+        case 2:
+        	start_color();
+            //init_pair(PLAYER_PAIR, COLOR_RED, COLOR_MAGENTA);
+            //attron(COLOR_PAIR(PLAYER_PAIR));
+            mvprintw(5, 3, "        .~~.");
+            mvprintw(6, 3, "      _(    )");
+            mvprintw(7, 3, " .-._(       '.");
+            mvprintw(8, 3, "(______________)");
+
+            break;
+        case 3:
+            start_color();
+            mvprintw(5, 3, "        .~~.");
+            mvprintw(6, 3, " .--.__(    )._");
+            mvprintw(7, 3, "(______________')");
+            init_pair(PLAYER_PAIR, COLOR_BLUE, COLOR_BLACK);
+            attron(COLOR_PAIR(PLAYER_PAIR));
+            mvprintw(8, 3, "  :;|;||:||:|;|");
+            attroff(COLOR_PAIR(PLAYER_PAIR));
+
+            break;
+        case 4:
+            start_color();
+            mvprintw(5, 3, "        .~~.");
+            mvprintw(6, 3, " .--.__(    )._");
+            mvprintw(7, 3, "(______________')");
+            init_pair(PLAYER_PAIR, COLOR_CYAN, COLOR_BLACK);
+            attron(COLOR_PAIR(PLAYER_PAIR));
+            mvprintw(8, 3, "  +*#*#+*##*+*#");
+            attroff(COLOR_PAIR(PLAYER_PAIR));
+
+            break;
     }
 }
