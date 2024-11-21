@@ -22,12 +22,11 @@ TO DO
 [ ] branch conditionals
     [x] extreme weather conditions
     [ ] what to wear
-    [ ] sun tanning/UV
     [ ] activities
-[ ] update what conditions you would like to see
+[x] update what conditions you would like to see
 [ ] how to use guide 
 [x] error message for zip code that does not exist
-    - had to create pointers for apiURL and turn user input loop into a functino for simplicity
+    - had to create pointers for apiURL and turn user input loop into a function for simplicity
     - maybe go back to createApiUrl and see if it can be condensed further?
         (uses lots of pointers, maybe not necessary)
 */
@@ -39,7 +38,8 @@ size_t write_data(void *ptr, size_t size, size_t nmemb, FILE *stream);
 const char *windDegreesConversion(int windDirectionInDegrees);
 int createApiURL();
 int evaluateCurrentWeather();
-void drawWeatherGraphic();
+void drawWeatherGraphic(int weatherIdentifier);
+void printWeatherSuggestions(int weatherIdentifier);
 
 /* GLOBAL VARIABLES */
 
@@ -69,9 +69,6 @@ int cloudCoveragePercentage;
 
 // lone object
 char *location = NULL;
-
-// weather identifier for printing graphics
-int weatherIdentifier;
 
 int main (void) {
     printf("Enter the zip code you would like to see the weather at.\n");
@@ -143,7 +140,7 @@ int main (void) {
     printf("\n");
     printf("Cloud Coverage: %d%%\n", cloudCoveragePercentage);
     */
-    evaluateCurrentWeather();
+    int weatherIdentifier = evaluateCurrentWeather();
     
      // init screen and sets up screen
     initscr();
@@ -153,7 +150,7 @@ int main (void) {
         printw("Your terminal does not support color\n");
     }
 
-    drawWeatherGraphic();
+    drawWeatherGraphic(weatherIdentifier);
 	mvprintw(5, 22, "Current: %.2lf°F", tempValue);
     mvprintw(6, 22, "High: %.2lf°F", tempMax);
 	mvprintw(7, 22, "Low: %.2lf°F", tempMin);
@@ -168,6 +165,12 @@ int main (void) {
     if (snowPerHour != -1) {
         mvprintw(10, 22, "Snow: %.2lf mm/h", snowPerHour);
     }
+
+    printWeatherSuggestions(weatherIdentifier);
+
+    // INSERT CONDITIONALS FOR OPTIONAL WEATHER CONDITIONS
+
+
 
     // refreshes the screen
     refresh();
@@ -414,7 +417,9 @@ const char *windDegreesConversion(int windDegrees) {
 }
                         
 int evaluateCurrentWeather() {
-    // compare to current weather main description to print ASCII art
+    int weatherIdentifier;
+
+    // compare to current weather main description to print ASCII art and conditional suggestions accordingly
     if (strcmp(mainOverview, "Clear") == 0) {
         weatherIdentifier = 1;
     } else if (strcmp(mainOverview, "Clouds") == 0) {
@@ -444,9 +449,11 @@ int evaluateCurrentWeather() {
     if (tempValue >= 100 || (feelsLikeValue >= 90 && humidityValue >= 75)) {
         printf("Heat advisory: High temperature or high feeling temperature in the area.");
     }
+
+    return weatherIdentifier;
 }
 
-void drawWeatherGraphic() {
+void drawWeatherGraphic(int weatherIdentifier) {
     switch (weatherIdentifier) {
         case 0:
             start_color();
@@ -462,9 +469,11 @@ void drawWeatherGraphic() {
             start_color();
             init_pair(PLAYER_PAIR, COLOR_YELLOW, COLOR_BLACK);
             attron(COLOR_PAIR(PLAYER_PAIR));
-            mvprintw(5, 3, "'.|.'");
-            mvprintw(6, 3, "~~O~~");
-            mvprintw(7, 3, ".'|'.");
+            mvprintw(5, 3, "      \\ | /");
+            mvprintw(6, 3, "    '-.;;;.-'");
+            mvprintw(7, 3, "   -==;;;;;==-");
+            mvprintw(8, 3, "    .-';;;'-.");
+            mvprintw(9, 3, "      / | \\");
             attroff(COLOR_PAIR(PLAYER_PAIR));;
 
             break;
@@ -499,6 +508,53 @@ void drawWeatherGraphic() {
             mvprintw(8, 3, "  +*#*#+*##*+*#");
             attroff(COLOR_PAIR(PLAYER_PAIR));
 
+            break;
+    }
+}
+
+void printWeatherSuggestions(int weatherIdentifier) {
+    switch (weatherIdentifier) {
+// only need case 3 and 4, because those are rain and snow.
+// 0, 1, and 2 should all be roughly the same. (0 being anything besides the listed conditions, and 1/2 are clear/cloudy)
+        case 3:
+            mvprintw(15, 1, "It is currently raining.");
+            mvprintw(16, 1, "Stay dry by wearing layers and also a raincoat, or use an umbrella.");
+            mvprintw(17, 1, "Stay inside and stay dry; watch a movie or read a book.");
+
+            break;
+        case 4:
+            mvprintw(15, 1, "It is currently snowing.");
+            mvprintw(16, 1, "Stay warm by wearing layers and an insulated coat.");
+            mvprintw(17, 1, "Stay inside and stay warm; read a book by the fire.");
+
+            break;
+        default:
+            if (feelsLikeValue < 0) {
+                mvprintw(15, 1, "It currently feels like it is below 0 degrees.");
+                mvprintw(16, 1, "Wear warm layers and an insulated coat.");
+                mvprintw(17, 1, "Stay inside today. Keep warm with a fireplace and watch a movie.");
+            } else if (feelsLikeValue < 32) {
+                mvprintw(15, 1, "It currently feels like it is below freezing.");
+                mvprintw(16, 1, "Make sure to wear a jacket and warm clothing.");
+                mvprintw(17, 1, "Stay inside if possible today. Read a book indoors or play a boardgame.");
+            } else if (feelsLikeValue < 60) {
+                mvprintw(15, 1, "It currently feels like it is below 60 degrees.");
+                mvprintw(16, 1, "It may be a bit chilly, wear a jacket outside.");
+                mvprintw(17, 1, "Consider staying inside today. Maybe watch a movie or go for a small walk.");
+            } else if (feelsLikeValue < 70) {
+                mvprintw(15, 1, "It currently feels like it is around 70 degrees.");
+                mvprintw(16, 1, "It is very nice outside, no need for a coat!");
+                mvprintw(17, 1, "Today is a good day to go outside. Go to the park or take the dog for a walk.");
+            } else if (feelsLikeValue < 80) {
+                mvprintw(15, 1, "It currently feels like it is around 80 degrees.");
+                mvprintw(16, 1, "It's a little bit warm, dress lightly.");
+                mvprintw(17, 1, "It is hot outside. Go to the pool/beach and stay cool.");
+            } else {
+                mvprintw(15, 1, "It currently feels like it is over 80 degrees.");
+                mvprintw(16, 1, "It is likely pretty hot out, consider a t-shirt and light clothing.");
+                mvprintw(17, 1, "It is very hot, keep cool at the beach/pool or stay in the air conditioning.");
+            }
+            
             break;
     }
 }
