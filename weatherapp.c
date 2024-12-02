@@ -19,10 +19,10 @@ TO DO
 [x] file system
 [x] dynamic array sizing for string variables
 [x] conversion of wind degrees to cardinal directions
-[ ] branch conditionals
+[x] branch conditionals
     [x] extreme weather conditions
-    [ ] what to wear
-    [ ] activities
+    [x] what to wear
+    [x] activities
 [x] update what conditions you would like to see
 [ ] how to use guide 
 [x] error message for zip code that does not exist
@@ -40,8 +40,18 @@ int createApiURL();
 int evaluateCurrentWeather();
 void drawWeatherGraphic(int weatherIdentifier);
 void printWeatherSuggestions(int weatherIdentifier);
+void printInstructions();
+int profileSelection();
 
 /* GLOBAL VARIABLES */
+
+struct Profile {
+char name[50];
+int zipCode;
+char choice[3];
+};
+	
+struct Profile currentProfile;
 
 // under 'weather' object
 char *mainOverview = NULL;
@@ -71,7 +81,7 @@ int cloudCoveragePercentage;
 char *location = NULL;
 
 int main (void) {
-    printf("Enter the zip code you would like to see the weather at.\n");
+    profileSelection();
 
     //retrieve user input
     char apiURL[256];
@@ -104,6 +114,9 @@ int main (void) {
     }
     
     // FROM THIS POINT FORWARD, ALL GLOBAL VARIABLES HAVE USABLE VALUES
+    
+    
+    // ORIGINAL TEST CASES
     /*
     printf("\n");
     printf("Location: %s\n", location);
@@ -166,6 +179,18 @@ int main (void) {
         mvprintw(10, 22, "Snow: %.2lf mm/h", snowPerHour);
     }
 
+    if (currentProfile.choice[0] == 'y') {
+        mvprintw(12, 22, "Humidity: %d", humidityValue);
+    }
+
+    if (currentProfile.choice[1] == 'y') {
+        mvprintw(13, 22, "Windspeed: %.2lf", windSpeed);
+    }
+
+    if (currentProfile.choice[2] == 'y') {
+        mvprintw(14, 22, "Cloud Coverage: %d", cloudCoveragePercentage);
+    }
+
     printWeatherSuggestions(weatherIdentifier);
 
     // INSERT CONDITIONALS FOR OPTIONAL WEATHER CONDITIONS
@@ -180,7 +205,6 @@ int main (void) {
     free(weatherDescription);
     free(location);
     // deallocates memory and ends ncurses
-    // endwin();
     return 0;
     
 }
@@ -358,14 +382,11 @@ int createApiURL(char *apiURL) {
     char *baseURL = "https://api.openweathermap.org/data/2.5/weather?zip=-----&appid=020c9db2f8a57004fe2e82f6e1bbd905&units=imperial";
     
     //input loop to make sure user enters a 5 digit zip code
-    scanf("%s", userDefinedLocation);
-    
-    while (strlen(userDefinedLocation) != 5) {
-        printf("Please enter a valid zip code.\n");
-        scanf("%s", userDefinedLocation);
-    }
-    
-    
+    //scanf("%s", userDefinedLocation);
+
+    sprintf(userDefinedLocation, "%d", currentProfile.zipCode);
+    printf("%s", userDefinedLocation);
+     
     //modify the API url for the correct location
 
     // use strchr() to find first instance of '-'
@@ -514,8 +535,8 @@ void drawWeatherGraphic(int weatherIdentifier) {
 
 void printWeatherSuggestions(int weatherIdentifier) {
     switch (weatherIdentifier) {
-// only need case 3 and 4, because those are rain and snow.
-// 0, 1, and 2 should all be roughly the same. (0 being anything besides the listed conditions, and 1/2 are clear/cloudy)
+    // only need case 3 and 4, because those are rain and snow.
+    // 0, 1, and 2 should all be roughly the same. (0 being anything besides the listed conditions, and 1/2 are clear/cloudy)
         case 3:
             mvprintw(15, 1, "It is currently raining.");
             mvprintw(16, 1, "Stay dry by wearing layers and also a raincoat, or use an umbrella.");
@@ -557,4 +578,174 @@ void printWeatherSuggestions(int weatherIdentifier) {
             
             break;
     }
+}
+
+void printInstructions() {
+    printf("How to use: \n");
+    printf("Enter a 5 digit zip code you would like to see the weather at.\n");
+    printf("If the zip code is invalid or otherwise does not exist, you will be prompted to enter another one.\n");
+    printf("\n");
+
+    printf("You can choose your settings by entering the settings menu when prompted.\n");
+    printf("By changing your settings, you may choose which optional conditions you would like to see.\n");
+    printf("These settings will be saved to your profile.\n");
+    printf("\n");
+
+    printf("Output will be saved to your profile.\n");
+}
+
+int profileSelection() {
+	//Create flag for loop and struct for profiles
+	char display = 'n';
+	
+	
+	FILE *fptr;
+
+    struct Profile profiles[3];  // Array to store up to 3 profiles
+    int profileCount = 0;         // To keep track of how many profiles were read
+	
+	
+	fptr = fopen("example.txt", "r");
+    if (fptr == NULL) {
+        // If the file cannot be opened, print an error message and exit
+        perror("Error opening file");
+        return 1;
+    }
+
+    // Read the profiles until the end of the file or the array limit is reached
+    while (fscanf(fptr, "%s %d %s", profiles[profileCount].name, 
+                   &profiles[profileCount].zipCode, 
+                   profiles[profileCount].choice) == 3) {
+        profileCount++;
+
+        // If we exceed the array limit, stop reading further
+        if (profileCount >= 10) {
+            printf("Maximum number of profiles (10) reached.\n");
+            break;
+        }
+    }
+
+    // Close the file after reading
+    fclose(fptr);
+	
+	fptr = fopen("example.txt", "w");		
+	// Write some text to the file
+	
+	fprintf(fptr, "%s %d %s\n", profiles[0].name, profiles[0].zipCode, profiles[0].choice);
+	fprintf(fptr, "%s %d %s\n", profiles[1].name, profiles[1].zipCode, profiles[1].choice);
+	fprintf(fptr, "%s %d %s\n", profiles[2].name, profiles[2].zipCode, profiles[2].choice);
+	
+
+	// Close the file
+	fclose(fptr);
+	
+	printf("Hello Welcome to the Weather App\n");
+    int currpro;
+	while(display != 'y') {
+		//initialize local variables
+		int initchoice = -1;
+		currpro = -1;
+		char usernamestring[20];
+		
+		char new = 'p';
+		
+		//ask question to go into switch funtcion
+		printf("Would you like to display weather(1), change/add weather profiles(2), or see a guide to our app(3)\n");
+		
+		while(initchoice < 1 || initchoice > 3) {
+			scanf(" %d", &initchoice);
+			if(initchoice < 1 || initchoice > 3)
+				printf("That is not one of your choices, choose 1, 2, or 3.\n");
+		}
+		
+		switch(initchoice){
+			case(1):
+				//check if any available profiles to display
+				if(profiles[0].name[0] == '?' && profiles[1].name[0] == '?' && profiles[2].name[0] == '?') {
+					printf("No old profiles\n");
+					break;
+				}
+				//choose which one to display
+				printf("Which profile would you like to display? %s, %s, %s(1,2,3)\n", profiles[0].name, profiles[1].name, profiles[2].name);
+				while(currpro < 1|| currpro > 3) { 
+					scanf("%d", &currpro);
+					if(currpro > 0 && currpro < 4)
+						break;
+					printf("That is not a profile. Try Again.\n");
+				}
+				//print profile values
+				printf("Profile : %s \n", profiles[currpro-1].name);
+				printf("Zip code : %d\n", profiles[currpro-1].zipCode);
+				printf("Humidity : %c\n", profiles[currpro-1].choice[0]);
+				printf("Wind speed : %c\n", profiles[currpro-1].choice[1]);
+				printf("Cloud Coverage : %c\n", profiles[currpro-1].choice[2]);
+				
+				
+				//ask if they want to go into ncurses display
+				printf("Would you like to see this info?(y/n)\n");
+				scanf(" %c", &display);
+				break;
+			case(2):
+				// ask if they want to delete or create profile
+				printf("Would you like to add a new profile or delete an old one?(n/d)\n");
+				scanf(" %c", &new);
+				//choose which profile slot to put new info in
+				if(new == 'n'){
+					if(profiles[0].name[0] == '?')
+						currpro = 1;
+					else if(profiles[1].name[0] == '?')
+						currpro = 2;
+					else if(profiles[2].name[0] == '?')
+						currpro = 3;
+					else {
+						printf("Profiles full erase one first");
+						break;
+					}
+					//ask and assign relative values based on user input for new values
+					printf("What would you like your profile name to be?\n");
+					scanf("%s", usernamestring);
+					strcpy(profiles[currpro-1].name, usernamestring);
+					printf("What is the zip code of preferred weather?\n");
+					scanf("%d", &profiles[currpro-1].zipCode);
+					printf("Would you like to display humidity?(y/n)\n");
+					scanf(" %c", &profiles[currpro-1].choice[0]);
+					printf("Would you like to display wind speed?(y/n)\n");
+					scanf(" %c", &profiles[currpro-1].choice[1]);
+					printf("Would you like to display cloud coverage?(y/n)\n");
+					scanf(" %c", &profiles[currpro-1].choice[2]);
+					
+				}
+				if(new == 'd'){
+					//change profile name to ? to "delete"
+					printf("Which profile would you like to delete? %s, %s, %s(1,2,3)\n", profiles[0].name, profiles[1].name, profiles[2].name);
+					scanf("%d", &currpro);
+					if(currpro == 1)
+						strcpy(profiles[0].name, "?");
+					if(currpro == 2)
+						strcpy(profiles[1].name, "?");
+					if(currpro == 3)
+						strcpy(profiles[2].name, "?");
+				}
+				break;
+			case(3):
+				printf("HOW TO\n");
+				break;
+		}
+			// Open profile file in writing mode
+		fptr = fopen("example.txt", "w");
+		
+		// Write profiles to the file
+		fprintf(fptr, "%s %d %s\n", profiles[0].name, profiles[0].zipCode, profiles[0].choice);
+		fprintf(fptr, "%s %d %s\n", profiles[1].name, profiles[1].zipCode, profiles[1].choice);
+		fprintf(fptr, "%s %d %s\n", profiles[2].name, profiles[2].zipCode, profiles[2].choice);
+
+		// Close the file
+		fclose(fptr);
+		
+	
+	}
+    
+    currentProfile = profiles[currpro-1];
+
+
 }
