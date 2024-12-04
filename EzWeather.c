@@ -7,32 +7,6 @@
 
 #define PLAYER_PAIR 5
 
-// api url for ames iowa in imperial units: https://api.openweathermap.org/data/2.5/weather?zip=50012&appid=020c9db2f8a57004fe2e82f6e1bbd905&units=imperial
-
-// gcc weatherapp.c -o weatherapp -lcurl -ljson-c -lncurses -DNCURSES_STATIC
-// gcc EzWeather.c -o EzWeather -lcurl -ljson-c -lncurses -DNCURSES_STATIC
-
-
-// DEMO TO JUSTIN CAUSE WE EDITED PROPOSAL
-
-/*
-TO DO
-[x] NEED TO ADD RAIN AND SNOW VARIABLES
-[x] file system
-[x] dynamic array sizing for string variables
-[x] conversion of wind degrees to cardinal directions
-[x] branch conditionals
-    [x] extreme weather conditions
-    [x] what to wear
-    [x] activities
-[x] update what conditions you would like to see
-[x] how to use guide 
-[x] error message for zip code that does not exist
-    - had to create pointers for apiURL and turn user input loop into a function for simplicity
-    - maybe go back to createApiUrl and see if it can be condensed further?
-        (uses lots of pointers, maybe not necessary)
-*/
-
 /* PROTOTYPES */
 int weatherData(char *apiURL);
 int parseWeatherData();
