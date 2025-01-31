@@ -348,7 +348,7 @@ size_t write_data(void *ptr, size_t size, size_t nmemb, FILE *stream) {
 
 int createApiURL(char *apiURL) {
     char userDefinedLocation[6];
-    char *baseURL = "https://api.openweathermap.org/data/2.5/weather?zip=-----&appid=020c9db2f8a57004fe2e82f6e1bbd905&units=imperial";
+    char *baseURL = "https://api.openweathermap.org/data/2.5/weather?zip=-----&appid=INSERT_API_KEY_HERE&units=imperial";
     
     //scanf("%s", userDefinedLocation);
 
